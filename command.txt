@@ -1,0 +1,11 @@
+ssh root@79.143.95.63
+
+79.143.95.63
+
+jZN3Z1TgKPEgdnJA
+
+/srv/152-erp.topledspain.com/odoo/sources/odoo/odoo/addons/react_native/
+
+cd /srv/152-erp.topledspain.com && docker-compose down && docker-compose up -d
+
+scp main.py root@79.143.95.63:/srv/152-erp.topledspain.com/odoo/sources/odoo/odoo/addons/react_native/controllers

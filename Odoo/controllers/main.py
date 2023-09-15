@@ -1,3 +1,4 @@
+import base64
 from collections import defaultdict
 
 from odoo import http
@@ -5,6 +6,22 @@ from odoo.http import request, Response
 import json
 import xmlrpc.client
 
+def contact_login(user_login, user_password):
+    Contact = request.env['res.partner']
+    contact = Contact.search([('user_login', '=', user_login)], limit=1)
+
+    if contact:
+        # Perform the login for the specified contact
+        uid = request.session.authenticate(request.session.db, user_login, user_password)
+        if uid:
+            # Successfully logged in
+            return "Login successful"
+        else:
+            # Failed to log in
+            return "Login failed"
+    else:
+        # Contact not found
+        return "Contact not found"
 class APIController(http.Controller):
     @http.route('/get_session_id', type='http', auth='user')
     def get_session_id(self):
@@ -195,3 +212,46 @@ class APIController(http.Controller):
     @http.route('/api/v1/test/', methods=["GET"], type='http', auth='public', csrf=False)
     def field_products1(self):
         return Response(response=json.dumps("This is test API apply."), content_type='application/json')
+    
+    @http.route('/api/create_contact', auth='public', type='http', website=True, methods=['POST'], csrf=False)
+    def create_contact(self, **post):
+        env = request.env
+        contact_vals = {
+            'name': post.get('name'),
+            'email': post.get('email'),
+            'phone': post.get('phone'),
+            # Add other contact fields as needed
+        }
+        password = post.get('password')
+        image = post.get('image')
+
+        if image:
+            contact_vals['image'] = base64.b64encode(image.read())
+
+        user_vals = {
+            'name': post.get('name'),
+            'login': post.get('email'),
+            'password': password,
+            # Add other user fields as needed
+        }
+
+        contact = env['res.partner'].sudo().create(contact_vals)
+        user = env['res.users'].sudo().create(user_vals)
+        contact.user_id = user
+
+        return 'Contact created with ID: {}'.format(contact.id)
+    
+
+
+    @http.route('/api/contact_login', auth='public', type='http', website=True, methods=['POST'],csrf=False)
+    def perform_contact_login(self, **post):
+        user_login = post.get('user_login')
+        user_password = post.get('user_password')
+        
+        if user_login and user_password:
+            result = contact_login(user_login, user_password)
+            return result
+        else:
+            return "Invalid request"
+
+ 
