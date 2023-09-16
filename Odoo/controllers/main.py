@@ -280,6 +280,55 @@ class APIController(http.Controller):
         # Return the total sales price
         return str(total_sales_price)
     
+    @http.route('/api/get_contact_loyalty_points', auth='public', type='http', website=True, methods=['POST'],csrf=False)
+    def get_contact_loyalty_points(self, **post):
+        # Retrieve the contact
+        email = post.get('email')
+        contacts = request.env['res.partner'].search([('email', '=', email)])
+        contact = contacts[0]
+
+        return "hello"
+    
+    @http.route('/api/get_contact_eWallet_balance', auth='public', type='http', website=True, methods=['POST'],csrf=False)
+    def get_contact_eWallet_balance(self, **post):
+        # Retrieve the contact
+        email = post.get('email')
+        contacts = request.env['res.partner'].search([('email', '=', email)])
+        contact = contacts[0]
+
+        payment = http.request.env['account.payment'].sudo().search([('partner_id', '=', contact.id)], limit=1)
+        
+        return str(payment)
+        e_wallet_balance = payment.e_wallet_balance if payment else 0.0
+
+    @http.route('/api/get_contact_giftcards', auth='public', type='http', website=True, methods=['POST'],csrf=False)
+    def get_giftcard(self,  **post):
+        email = post.get('email')
+        contacts = request.env['res.partner'].search([('email', '=', email)])
+        contact = contacts[0]
+
+        giftcards = request.env['loyalty.card'].search([('partner_id', '=', contact.id)])
+        gift_data = [{
+            'name': gift.name,
+
+        } for gift in giftcards]
+        return str(giftcards)
+        
+    
+    @http.route('/api/get_contact_orders', auth='public', type='http', website=True, methods=['POST'],csrf=False)
+    def get_pos_orders(self,  **post):
+        email = post.get('email')
+        contacts = request.env['res.partner'].search([('email', '=', email)])
+        contact = contacts[0]
+
+        orders = request.env['pos.order'].search([('partner_id', '=', contact.id)])
+        order_data = [{
+            'name': order.name,
+            'date_order': order.date_order,
+            'amount_total': order.amount_total,
+        } for order in orders]
+        return str(order_data)
+        
 def get_pos_barcode(contact_id):
     contact = request.env['res.partner'].browse(int(contact_id))
 
