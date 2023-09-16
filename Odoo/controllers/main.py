@@ -287,7 +287,9 @@ class APIController(http.Controller):
         contacts = request.env['res.partner'].search([('email', '=', email)])
         contact = contacts[0]
 
-        return "hello"
+        Loyaltys = request.env['loyalty.card'].sudo().search([('partner_id', '=', contact.id), ('program_type', 'ilike', 'Loyalty')])
+        loyalty = Loyaltys[0]
+        return str(loyalty.points)
     
     @http.route('/api/get_contact_eWallet_balance', auth='public', type='http', website=True, methods=['POST'],csrf=False)
     def get_contact_eWallet_balance(self, **post):
@@ -296,10 +298,12 @@ class APIController(http.Controller):
         contacts = request.env['res.partner'].search([('email', '=', email)])
         contact = contacts[0]
 
-        payment = http.request.env['account.payment'].sudo().search([('partner_id', '=', contact.id)], limit=1)
+        eWallets = request.env['loyalty.card'].sudo().search([('partner_id', '=', contact.id), ('program_type', 'ilike', 'eWallet')])
+
+        ewallet = eWallets[0]
+
+        return str(ewallet.points)
         
-        return str(payment)
-        e_wallet_balance = payment.e_wallet_balance if payment else 0.0
 
     @http.route('/api/get_contact_giftcards', auth='public', type='http', website=True, methods=['POST'],csrf=False)
     def get_giftcard(self,  **post):
@@ -307,12 +311,16 @@ class APIController(http.Controller):
         contacts = request.env['res.partner'].search([('email', '=', email)])
         contact = contacts[0]
 
-        giftcards = request.env['loyalty.card'].search([('partner_id', '=', contact.id)])
-        gift_data = [{
-            'name': gift.name,
+        giftcards = request.env['loyalty.card'].sudo().search([('partner_id', '=', contact.id), ('program_type', 'ilike', 'Gift')])
 
-        } for gift in giftcards]
-        return str(giftcards)
+        
+        order_data = [{
+            'code': card.code,
+            'balance': card.points,
+            'date' : card.create_date
+        } for card in giftcards]
+
+        return str(order_data)
         
     
     @http.route('/api/get_contact_orders', auth='public', type='http', website=True, methods=['POST'],csrf=False)
