@@ -243,15 +243,49 @@ class APIController(http.Controller):
     
 
 
-    @http.route('/api/contact_login', auth='public', type='http', website=True, methods=['POST'],csrf=False)
-    def perform_contact_login(self, **post):
-        user_login = post.get('user_login')
-        user_password = post.get('user_password')
-        
-        if user_login and user_password:
-            result = contact_login(user_login, user_password)
-            return result
-        else:
-            return "Invalid request"
+    @http.route('/api/pos-barcode/', auth='public', type='http', website=True, methods=['POST'],csrf=False)
+    def get_pos_barcode_route(self, **post):
 
- 
+        email = post.get('email')
+        contacts = request.env['res.partner'].search([('email', '=', email)])
+        
+        return contacts[0].barcode
+    
+    @http.route('/api/contact-info/', auth='public', type='http', website=True, methods=['POST'],csrf=False)
+    def get_contact_info_route(self, **post):
+
+        email = post.get('email')
+        contacts = request.env['res.partner'].search([('email', '=', email)])
+        contact = contacts[0]
+        properties = {}
+        for field_name in contact.fields_get():
+            value = contact[field_name]
+            properties[field_name] = value
+
+        return str(properties)
+    
+    @http.route('/api/get_contact_total_sales', auth='public', type='http', website=True, methods=['POST'],csrf=False)
+    def get_contact_total_sales(self, **post):
+        # Retrieve the contact
+        email = post.get('email')
+        contacts = request.env['res.partner'].search([('email', '=', email)])
+        contact = contacts[0]
+
+        # Retrieve total sales price associated with the contact
+        total_sales_price = contact.sale_order_ids.mapped('amount_total')
+
+        # Calculate the sum of the sales prices
+        total_sales_price = sum(total_sales_price)
+
+        # Return the total sales price
+        return str(total_sales_price)
+    
+def get_pos_barcode(contact_id):
+    contact = request.env['res.partner'].browse(int(contact_id))
+
+    properties = {}
+    for field_name in contact.fields_get():
+        value = contact[field_name]
+        properties[field_name] = value
+
+    return str(properties)
