@@ -29,12 +29,13 @@ LogBox.ignoreAllLogs();
 const ScanPage = ({ navigation }) => {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
-  const [scanData, setScanData] = useState("044e-0546-f54d");
+  const [scanData, setScanData] = useState("044b-e68e-43a5");
 
   const [previousScreen, setPreviousScreen] = useState("Barcode");
 
   const [visibleManual, setVisibleManual] = useState(null);
   const [printVisible, setPrintVisible] = useState(null);
+  const [cardStatus, setCardStatus] = useState(true);
 
   const [dimension, setDimension] = useState(Dimensions.get("window"));
   const onChange = () => {
@@ -80,6 +81,25 @@ const ScanPage = ({ navigation }) => {
     console.log(data);
     setScanData(data);
   };
+
+  useEffect(() => {
+    var myHeaders = new Headers();
+    
+
+    var requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      redirect: "follow",
+    };
+
+    fetch(
+      "https://erp.topledspain.com/api/search_giftcard?code=0448-aa4c-462b",
+      requestOptions
+    )
+      .then((response) => response.text())
+      .then((result) => console.log(result))
+      .catch((error) => console.log("error", error));
+  }, []);
   const PrintModal = () => {
     return (
       <View
@@ -125,7 +145,7 @@ const ScanPage = ({ navigation }) => {
             alignItems: "center",
           }}
         >
-          <QRCode value={"350e-395f-2dd3"} size={dimension.width * 0.2} />
+          <QRCode value={scanData} size={dimension.width * 0.2} />
           <Text
             style={{
               fontWeight: "bold",
@@ -133,7 +153,7 @@ const ScanPage = ({ navigation }) => {
               marginTop: dimension.height * 0.01,
             }}
           >
-            350e-395f-2dd3
+            {scanData}
           </Text>
 
           <Text
@@ -155,7 +175,7 @@ const ScanPage = ({ navigation }) => {
       </View>
     );
   };
-  const royalModal = () => {
+  const royalModal = (text) => {
     return (
       <View
         style={{
@@ -201,6 +221,7 @@ const ScanPage = ({ navigation }) => {
             textAlign: "center",
             alignSelf: "center",
             width: dimension.width * 0.6,
+            marginTop: dimension.height * 0.02,
             color: "#15224F",
             fontSize: 16,
           }}
@@ -217,8 +238,7 @@ const ScanPage = ({ navigation }) => {
             fontSize: 16,
           }}
         >
-          You cannot bind this gift card, please contact us if you have any
-          questions.
+          {text}
         </Text>
         <Text
           style={{
@@ -324,7 +344,11 @@ const ScanPage = ({ navigation }) => {
         isVisible={visibleManual === 1}
         style={{ justifyContent: "center" }}
       >
-        {royalModal()}
+        {cardStatus
+          ? royalModal(
+              "You cannot bind this gift card, please contact us if you have any questions."
+            )
+          : royalModal("Could not find this gift card .")}
       </Modal>
       <Modal isVisible={printVisible === 1} style={styles.bottomModal}>
         {PrintModal()}

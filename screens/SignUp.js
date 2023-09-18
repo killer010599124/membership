@@ -38,7 +38,7 @@ const SignUpScreen = ({ navigation }) => {
     require("../assets/Avatar5.png"),
     require("../assets/Avatar6.png"),
   ];
-  const [currentAvatar, setCurrentAvatar]= useState(imgUrl[0]);
+  const [currentAvatar, setCurrentAvatar] = useState(imgUrl[0]);
   const [showPassword, setShowPassword] = useState(false);
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -66,6 +66,33 @@ const SignUpScreen = ({ navigation }) => {
     //   Rubic: require("../assets/font/Rubik-SemiBold.ttf"),
     // });
   }, []);
+
+  const registerContact = () => {
+
+    if(password == confirmPassword){
+      var myHeaders = new Headers();
+
+
+      var requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        redirect: "follow",
+      };
+  
+      fetch(
+        `https://erp.topledspain.com/api/create_contact?name=${username}&email=${email}&phone=${phone}&password=${password}&image`,
+        requestOptions
+      )
+        .then((response) => response.text())
+        .then((result) => {
+          alert("Your account is successfully registered")
+        })
+        .catch((error) => console.log("error", error));
+    }else{
+      alert("Enter a confirm password correctly")
+    }
+    
+  };
 
   const royalModal = () => {
     return (
@@ -405,7 +432,7 @@ const SignUpScreen = ({ navigation }) => {
           onPress={handleToggleConfirmPasswordVisibility}
         >
           <Icon
-            name={!showPassword ? "ios-eye-outline" : "ios-eye-off-outline"}
+            name={!showConfirmPassword ? "ios-eye-outline" : "ios-eye-off-outline"}
             size={dimension.width * 0.06}
             color="#828282"
           />
@@ -415,7 +442,8 @@ const SignUpScreen = ({ navigation }) => {
       <Button
         title="Register"
         onPress={() => {
-          navigation.navigate('Login')
+          registerContact()
+          // navigation.navigate("Login");
         }}
       />
 

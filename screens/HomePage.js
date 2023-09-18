@@ -13,19 +13,19 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
-import { Foundation } from '@expo/vector-icons';
+import { Foundation } from "@expo/vector-icons";
 import CustomHeader from "../Components/header";
 import QRCode from "react-native-qrcode-svg";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const HomeScreen = ({ navigation, route }) => {
   const [username, setUsername] = useState("");
   const [appId, setAppId] = useState("");
   const [point, setPoint] = useState();
   const [balance, setBalance] = useState();
   const [average, setAverage] = useState();
-
+  const [shouldRender, setShouldRender] = useState(false);
   const [dimension, setDimension] = useState(Dimensions.get("window"));
   const onChange = () => {
     setDimension(Dimensions.get("window"));
@@ -37,6 +37,21 @@ const HomeScreen = ({ navigation, route }) => {
       //   Dimensions.removeEventListener('change', onChange);
     };
   });
+
+  const [giftCards, setGiftCards] = useState([]);
+  const testgiftCards = [
+    {
+      code: "3503-3ef3-39l8",
+      date: "29 June 2021, 7.14 PM",
+      balance: 2,
+    },
+    {
+      code: "3503-3ef3-39l9",
+      date: "29 June 2021, 7.14 PM",
+      balance: 2,
+    },
+  ];
+
   const generateRandomString = () => {
     const characters = "abcdef0123456789";
     let randomString = "";
@@ -53,25 +68,89 @@ const HomeScreen = ({ navigation, route }) => {
     return randomString;
   };
   useEffect(() => {
-    setAppId(generateRandomString());
-    setPoint(1356);
-    setBalance(30);
-    setAverage(2000);
-    setUsername("Jaka!");
+    AsyncStorage.getItem("contact_email").then((contact_email) => {
+      var myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+      var requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        redirect: "follow",
+      };
+
+      fetch(
+        `https://erp.topledspain.com/api/contact-info?email=${contact_email}`,
+        requestOptions
+      )
+        .then((response) => {
+          return response.json();
+        })
+        .then((result) => {
+          console.log(result);
+
+          setUsername(result.name + "!");
+          console.log(result.barcode);
+          setAppId(result.barcode);
+          setShouldRender(true);
+        })
+        .catch((error) => console.log("error", error));
+
+      fetch(
+        `https://erp.topledspain.com/api/get_contact_total_sales?email=${contact_email}`,
+        requestOptions
+      )
+        .then((response) => response.text())
+        .then((result) => {
+          setAverage(result);
+        })
+        .catch((error) => console.log("error", error));
+
+      fetch(
+        `https://erp.topledspain.com/api/get_contact_loyalty_points?email=${contact_email}`,
+        requestOptions
+      )
+        .then((response) => response.text())
+        .then((result) => {
+          setPoint(result);
+        })
+        .catch((error) => console.log("error", error));
+
+      fetch(
+        `https://erp.topledspain.com/api/get_contact_eWallet_balance?email=${contact_email}`,
+        requestOptions
+      )
+        .then((response) => response.text())
+        .then((result) => {
+          setBalance(result);
+        })
+        .catch((error) => console.log("error", error));
+
+      fetch(
+        `https://erp.topledspain.com/api/get_contact_giftcards?email=${contact_email}`,
+        requestOptions
+      )
+        .then((response) => response.text())
+        .then((result) => {
+          const jsonData = JSON.parse(result);
+          setGiftCards([jsonData[0], jsonData[1]]);
+          console.log(jsonData[0]);
+        })
+        .catch((error) => console.log("error", error));
+    });
   }, []);
 
-  const giftCards = [
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-  ];
+  const dateFormat = (dateString) => {
+    const dateTime = new Date(dateString);
+    const formattedDateTime = dateTime.toLocaleString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    });
+
+    return formattedDateTime;
+  };
   const renderItem = ({ item }) => (
     <View
       style={{
@@ -124,12 +203,12 @@ const HomeScreen = ({ navigation, route }) => {
                 fontWeight: "bold",
               }}
             >
-              {item.id}
+              {item.code}
             </Text>
             <Text
               style={{ fontSize: dimension.width * 0.03, color: "#BDBDBD" }}
             >
-              {item.date}
+              {dateFormat(item.date)}
             </Text>
           </View>
           <View
@@ -141,7 +220,7 @@ const HomeScreen = ({ navigation, route }) => {
             <Text
               style={{ fontSize: dimension.width * 0.05, fontWeight: "bold" }}
             >
-              €{parseFloat(item.price).toFixed(2)}
+              €{parseFloat(item.balance).toFixed(2)}
             </Text>
           </View>
           <View
@@ -163,7 +242,25 @@ const HomeScreen = ({ navigation, route }) => {
     </View>
   );
 
-  const randomString = generateRandomString();
+  const returnQR = () => {
+    return shouldRender ? (
+      <QRCode
+        value={appId}
+        size={dimension.width * 0.15}
+        color="white" // Set the color prop to "white" for a white QR code
+        backgroundColor="#5B259F"
+      />
+    ) : null;
+    return (
+      <QRCode
+        value={appId}
+        size={dimension.width * 0.15}
+        color="white" // Set the color prop to "white" for a white QR code
+        backgroundColor="#5B259F"
+      />
+    );
+  };
+
   return (
     <View
       style={{
@@ -227,22 +324,11 @@ const HomeScreen = ({ navigation, route }) => {
           }}
           underlayColor="#fff"
         >
-          <QRCode
-            value={randomString}
-            size={dimension.width * 0.15}
-            color="white" // Set the color prop to "white" for a white QR code
-            backgroundColor="#5B259F"
-          />
+          {returnQR()}
           <Text style={{ color: "white", marginTop: dimension.height * 0.01 }}>
-            {randomString}
+            {appId}
           </Text>
         </View>
-
-        {/* <Image
-          source={require("../assets/qrcode.png")}
-          style={{ width: "100%", height: "100%" , position : 'absolute'}}
-          resizeMode="stretch"
-        ></Image> */}
       </View>
 
       <View
@@ -348,10 +434,12 @@ const HomeScreen = ({ navigation, route }) => {
           >
             Gift Card
           </Text>
-          <Text style={{ color: "#8438FF", fontSize: dimension.width * 0.04 }} onPress={() => {
-            navigation.navigate('GiftCard');
-          }}>
-            
+          <Text
+            style={{ color: "#8438FF", fontSize: dimension.width * 0.04 }}
+            onPress={() => {
+              navigation.navigate("GiftCard");
+            }}
+          >
             View All
           </Text>
         </View>
@@ -376,57 +464,68 @@ const HomeScreen = ({ navigation, route }) => {
           borderRadius: dimension.width * 0.08,
           alignSelf: "center",
           flexDirection: "row",
-          justifyContent : 'space-evenly'
+          justifyContent: "space-evenly",
         }}
       >
         <TouchableOpacity
           style={{
             width: dimension.width * 0.08,
-            height: '100%',
-            justifyContent : 'center',
+            height: "100%",
+            justifyContent: "center",
           }}
           onPress={() => {
-            navigation.navigate('Home')
+            navigation.navigate("Home");
           }}
         >
-         <AntDesign name="home" size={dimension.width * 0.08} color="white" />
+          <AntDesign name="home" size={dimension.width * 0.08} color="white" />
         </TouchableOpacity>
         <TouchableOpacity
           style={{
             width: dimension.width * 0.08,
-            height: '100%',
-            justifyContent : 'center',
+            height: "100%",
+            justifyContent: "center",
           }}
           onPress={() => {
-            navigation.navigate('Ticket')
+            navigation.navigate("Ticket");
           }}
         >
-          <Foundation name="ticket" size={dimension.width * 0.08} color="white" />
+          <Foundation
+            name="ticket"
+            size={dimension.width * 0.08}
+            color="white"
+          />
         </TouchableOpacity>
         <TouchableOpacity
           style={{
             width: dimension.width * 0.08,
-            height: '100%',
-            justifyContent : 'center',  
-
+            height: "100%",
+            justifyContent: "center",
           }}
           onPress={() => {
-            navigation.navigate('GiftCard')
+            navigation.navigate("GiftCard");
           }}
         >
-          <MaterialCommunityIcons name="gift-outline" size={dimension.width * 0.08} color="white" />
+          <MaterialCommunityIcons
+            name="gift-outline"
+            size={dimension.width * 0.08}
+            color="white"
+          />
         </TouchableOpacity>
         <TouchableOpacity
           style={{
             width: dimension.width * 0.08,
-            height: '100%',
-            justifyContent : 'center',
+            height: "100%",
+            justifyContent: "center",
           }}
           onPress={() => {
-            navigation.navigate('Setting')
+            navigation.navigate("Setting");
           }}
         >
-          <Ionicons name="ios-settings-outline" size={dimension.width * 0.08} color="white" />
+          <Ionicons
+            name="ios-settings-outline"
+            size={dimension.width * 0.08}
+            color="white"
+          />
         </TouchableOpacity>
       </View>
     </View>

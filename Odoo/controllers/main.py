@@ -257,15 +257,35 @@ class APIController(http.Controller):
         email = post.get('email')
         contacts = request.env['res.partner'].search([('email', '=', email)])
         contact = contacts[0]
-        properties = {}
-        for field_name in contact.fields_get():
-            value = contact[field_name]
-            properties[field_name] = value
+        
+        contactInfo = {
+            'name' : contact.name,
+            'email' : contact.email,
+            'phone' : contact.phone,
+            'barcode' : contact.barcode
+        }
 
-        return str(properties)
+        return json.dumps(contactInfo)
+    
+    @http.route('/api/get_contact_image/', auth='public', type='http', website=True, methods=['POST'],csrf=False)
+    def get_contact_image(self, **post):
+        # Retrieve the contact
+        email = post.get('email')
+        contacts = request.env['res.partner'].search([('email', '=', email)])
+        contact = contacts[0]
+        
+        # Retrieve the contact image as a base64-encoded string
+        image = contact.avatar_1920
+        
+        # Set the appropriate content type for the image
+        content_type = 'image/jpeg'
+        
+        # Return the image as a response with the appropriate content type
+        return request.make_response(image, headers=[('Content-Type', content_type)])
     
     @http.route('/api/get_contact_total_sales', auth='public', type='http', website=True, methods=['POST'],csrf=False)
     def get_contact_total_sales(self, **post):
+
         # Retrieve the contact
         email = post.get('email')
         contacts = request.env['res.partner'].search([('email', '=', email)])
@@ -314,13 +334,31 @@ class APIController(http.Controller):
         giftcards = request.env['loyalty.card'].sudo().search([('partner_id', '=', contact.id), ('program_type', 'ilike', 'Gift')])
 
         
-        order_data = [{
-            'code': card.code,
-            'balance': card.points,
-            'date' : card.create_date
+        giftcard = [{
+            'code': card['code'],
+            'balance': str(card['points']),
+            'date' : str(card['create_date']),
         } for card in giftcards]
 
-        return str(order_data)
+        return json.dumps(giftcard)
+
+    
+    @http.route('/api/search_giftcard', auth='public', type='http', website=True, methods=['POST'],csrf=False)
+    def search_giftcard(self,  **post):
+        code = post.get('code')
+        giftcards = request.env['loyalty.card'].sudo().search([('program_type', 'ilike', 'Gift'), ('code', '=', code )])
+
+        cardcontacts = request.env['res.partner'].sudo().browse(int(giftcards[0].partner_id))
+        
+
+        order_data = [{
+            'code': card['code'],
+            'balance': str(card['points']),
+            'date' : str(card['create_date']),
+            'contact' : cardcontacts[0].email
+        } for card in giftcards]
+
+        return json.dumps(order_data)
         
     
     @http.route('/api/get_contact_orders', auth='public', type='http', website=True, methods=['POST'],csrf=False)
@@ -330,13 +368,17 @@ class APIController(http.Controller):
         contact = contacts[0]
 
         orders = request.env['pos.order'].search([('partner_id', '=', contact.id)])
+
         order_data = [{
-            'name': order.name,
-            'date_order': order.date_order,
-            'amount_total': order.amount_total,
+            'name': order['name'],
+            'date_order': str(order['date_order']),
+            'amount_total': str(order['amount_total']),
         } for order in orders]
-        return str(order_data)
+
+        return json.dumps(order_data)
         
+    
+    
 def get_pos_barcode(contact_id):
     contact = request.env['res.partner'].browse(int(contact_id))
 

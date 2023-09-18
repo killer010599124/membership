@@ -31,78 +31,46 @@ const TicketPage = ({ navigation }) => {
     };
   });
 
-  const ticketss = [
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-  ];
+  const [tickets, setTickets] = useState([]);
+
+  const dateFormat = (dateString) => {
+    const dateTime = new Date(dateString);
+    const formattedDateTime = dateTime.toLocaleString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    });
+
+    return formattedDateTime;
+  };
+  useEffect(() => {
+    AsyncStorage.getItem("contact_email").then((contact_email) => {
+      var myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+      var requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        redirect: "follow",
+      };
+
+      fetch(
+        "https://erp.topledspain.com/api/get_contact_orders?email=793100371@qq.com",
+        requestOptions
+      )
+        .then((response) => {
+          console.log(response);
+          return response.json()
+        })
+        .then((result) => {
+          console.log(result);
+        })
+        .catch((error) => console.log("error", error));
+    });
+  }, []);
+
   const renderItem = ({ item }) => (
     <View
       style={{
@@ -155,12 +123,12 @@ const TicketPage = ({ navigation }) => {
                 fontWeight: "bold",
               }}
             >
-              {item.id}
+              {item.name}
             </Text>
             <Text
               style={{ fontSize: dimension.width * 0.03, color: "#BDBDBD" }}
             >
-              {item.date}
+              {dateFormat(item.date)}
             </Text>
           </View>
           <View
@@ -172,7 +140,7 @@ const TicketPage = ({ navigation }) => {
             <Text
               style={{ fontSize: dimension.width * 0.05, fontWeight: "bold" }}
             >
-              €{parseFloat(item.price).toFixed(2)}
+              €{parseFloat(item.amount_total).toFixed(2)}
             </Text>
           </View>
           <View
@@ -238,7 +206,7 @@ const TicketPage = ({ navigation }) => {
 
         <View>
           <FlatList
-            data={ticketss}
+            data={tickets}
             renderItem={renderItem}
             // keyExtractor={(item) => item.id.toString()}
             style={{ height: dimension.height * 0.85 }}

@@ -35,79 +35,47 @@ const GiftCardPage = ({ navigation }) => {
     };
   });
 
-  const giftCards = [
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "4583-3af3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-    {
-      id: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      price: 2,
-    },
-  ];
-  const [currentItem, setCurrentItem] = useState(giftCards[0]);
+  const [giftCards, setGiftCards] = useState([]);
+  const [currentItem, setCurrentItem] = useState();
+
+  const dateFormat = (dateString) => {
+    const dateTime = new Date(dateString);
+    const formattedDateTime = dateTime.toLocaleString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    });
+
+    return formattedDateTime;
+  };
+  useEffect(() => {
+    AsyncStorage.getItem("contact_email").then((contact_email) => {
+      var myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+      var requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        redirect: "follow",
+      };
+
+      fetch(
+        `https://erp.topledspain.com/api/get_contact_giftcards?email=${contact_email}`,
+        requestOptions
+      )
+        .then((response) => response.text())
+        .then((result) => {
+          const jsonData = JSON.parse(result);
+          console.log(jsonData)
+          setGiftCards(jsonData);
+          setCurrentItem(jsonData[0]);
+        })
+        .catch((error) => console.log("error", error));
+    });
+  }, []);
+
   const renderItem = ({ item }) => (
     <View
       style={{
@@ -161,12 +129,12 @@ const GiftCardPage = ({ navigation }) => {
                 fontWeight: "bold",
               }}
             >
-              {item.id}
+              {item.code}
             </Text>
             <Text
               style={{ fontSize: dimension.width * 0.03, color: "#BDBDBD" }}
             >
-              {item.date}
+              {dateFormat(item.date)}
             </Text>
           </View>
           <View
@@ -178,7 +146,7 @@ const GiftCardPage = ({ navigation }) => {
             <Text
               style={{ fontSize: dimension.width * 0.05, fontWeight: "bold" }}
             >
-              €{parseFloat(item.price).toFixed(2)}
+              €{parseFloat(item.balance).toFixed(2)}
             </Text>
           </View>
           <View
@@ -235,22 +203,43 @@ const GiftCardPage = ({ navigation }) => {
             <AntDesign name="close" size={30} color="#D7D7D7" />
           </TouchableOpacity>
         </View>
-
-        <View
-          style={{
-            paddingHorizontal: dimension.width * 0.01,
-            paddingVertical: dimension.width * 0.005,
-            marginTop : dimension.height * 0.05,
-            width: dimension.width * 0.9,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <QRCode value={currentItem.id} size={dimension.width * 0.2} />
-          <Text style = {{fontWeight : 'bold', fontSize : dimension .width * 0.05, marginTop : dimension.height * 0.01}}>{currentItem.id}</Text>
-          <Text style = {{color : '#BDBDBD',fontSize : dimension .width * 0.04}}>{currentItem.date}</Text>
-          <Text style = {{fontSize : dimension.width * 0.08, fontWeight : 'bold', marginTop : dimension.height * 0.03}}>${parseFloat(currentItem.price).toFixed(2)}</Text>
-        </View>
+        {currentItem ? (
+          <View
+            style={{
+              paddingHorizontal: dimension.width * 0.01,
+              paddingVertical: dimension.width * 0.005,
+              marginTop: dimension.height * 0.05,
+              width: dimension.width * 0.9,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <QRCode value={currentItem.code} size={dimension.width * 0.2} />
+            <Text
+              style={{
+                fontWeight: "bold",
+                fontSize: dimension.width * 0.05,
+                marginTop: dimension.height * 0.01,
+              }}
+            >
+              {currentItem.code}
+            </Text>
+            <Text
+              style={{ color: "#BDBDBD", fontSize: dimension.width * 0.04 }}
+            >
+              {dateFormat(currentItem.date)}
+            </Text>
+            <Text
+              style={{
+                fontSize: dimension.width * 0.08,
+                fontWeight: "bold",
+                marginTop: dimension.height * 0.03,
+              }}
+            >
+              ${parseFloat(currentItem.balance).toFixed(2)}
+            </Text>
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -317,7 +306,7 @@ const GiftCardPage = ({ navigation }) => {
             justifyContent: "center",
           }}
           onPress={() => {
-            navigation.navigate ('Scan')
+            navigation.navigate("Scan");
           }}
         >
           <Ionicons

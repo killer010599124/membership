@@ -19,8 +19,8 @@ import { Ionicons } from "@expo/vector-icons";
 import EditText from "../Components/EditBox";
 
 const LoginScreen = ({ navigation, route }) => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("793100371@qq.com");
+  const [password, setPassword] = useState("admin");
 
   const [showPassword, setShowPassword] = useState(false);
   const handleTogglePasswordVisibility = () => {
@@ -43,7 +43,48 @@ const LoginScreen = ({ navigation, route }) => {
   }, []);
 
   const handleLogin = () => {
-    navigation.navigate('Home')
+    // Call server-side script to authenticate user
+    // console.log(value)
+    // console.log(url); // 'https://api.example.com'
+    const server_url = "https://erp.topledspain.com/web/session/authenticate";
+    fetch(server_url, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        method: "call",
+        params: {
+          db: "topledspain",
+          login: `${username}`,
+          password: `${password}`,
+          context: {},
+        },
+        id: 1,
+      }),
+    })
+      .then((response) => {
+
+        return response.json();
+      })
+      .then((data) => {
+        // Here, you can access the JSON data
+
+        if (data.result) {
+          console.log(data.result.username);
+          AsyncStorage.setItem("contact_email", username);
+          navigation.navigate("Home");
+        } else {
+          alert("Invalid credential");
+        }
+        // Do further processing or update your React Native component state
+      })
+      .catch((error) => {
+        // Handle any errors that occurred during the request
+        console.error(error);
+      });
   };
 
   return (
