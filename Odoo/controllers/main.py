@@ -348,17 +348,26 @@ class APIController(http.Controller):
         code = post.get('code')
         giftcards = request.env['loyalty.card'].sudo().search([('program_type', 'ilike', 'Gift'), ('code', '=', code )])
 
-        cardcontacts = request.env['res.partner'].sudo().browse(int(giftcards[0].partner_id))
-        
+        if giftcards :
+            contact = ''
+            
+            if giftcards[0].partner_id:
+                cardcontacts = request.env['res.partner'].sudo().browse(int(giftcards[0].partner_id))
+                contact = cardcontacts[0].email
+            else :
+                contact = 'new'
+            
 
-        order_data = [{
-            'code': card['code'],
-            'balance': str(card['points']),
-            'date' : str(card['create_date']),
-            'contact' : cardcontacts[0].email
-        } for card in giftcards]
+            order_data = [{
+                'code': card['code'],
+                'balance': str(card['points']),
+                'date' : str(card['create_date']),
+                'contact' : contact
+            } for card in giftcards]
 
-        return json.dumps(order_data)
+            return json.dumps(order_data)
+        else :
+            return "no"
         
     
     @http.route('/api/get_contact_orders', auth='public', type='http', website=True, methods=['POST'],csrf=False)
@@ -367,7 +376,8 @@ class APIController(http.Controller):
         contacts = request.env['res.partner'].search([('email', '=', email)])
         contact = contacts[0]
 
-        orders = request.env['pos.order'].search([('partner_id', '=', contact.id)])
+        # orders = request.env['pos.order'].search([('partner_id', '=', contact.id)])
+        orders = request.env['pos.order'].sudo().search([('partner_id', '=', contact.id)])
 
         order_data = [{
             'name': order['name'],
@@ -376,6 +386,7 @@ class APIController(http.Controller):
         } for order in orders]
 
         return json.dumps(order_data)
+        return "hello"
         
     
     

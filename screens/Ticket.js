@@ -33,18 +33,55 @@ const TicketPage = ({ navigation }) => {
 
   const [tickets, setTickets] = useState([]);
 
-  const dateFormat = (dateString) => {
-    const dateTime = new Date(dateString);
-    const formattedDateTime = dateTime.toLocaleString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-    });
+  const dateFormat = (inputDateStr) => {
+    // Convert input string to a Date object
+    console.log(inputDateStr)
+    var inputDateStr = "2023-09-15 14:31:30";
 
-    return formattedDateTime;
+    // Convert input string to a Date object
+    var inputDate = new Date(inputDateStr);
+
+    // Define month names
+    var monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    // Extract date components
+    var day = inputDate.getDate();
+    var month = monthNames[inputDate.getMonth()];
+    var year = inputDate.getFullYear();
+    var hours = inputDate.getHours();
+    var minutes = inputDate.getMinutes();
+
+    // Adjust hours to 12-hour format
+    var ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+
+    // Format the time string with leading zeros if necessary
+    var timeStr =
+      hours.toString().padStart(2, "0") +
+      "." +
+      minutes.toString().padStart(2, "0");
+
+    // Create the final formatted date and time string
+    var formattedDateStr =
+      day + " " + month + " " + year + ", " + timeStr + " " + ampm;
+
+    // Output the formatted date string
+    console.log(formattedDateStr);
+    return formattedDateStr;
   };
   useEffect(() => {
     AsyncStorage.getItem("contact_email").then((contact_email) => {
@@ -60,12 +97,10 @@ const TicketPage = ({ navigation }) => {
         "https://erp.topledspain.com/api/get_contact_orders?email=793100371@qq.com",
         requestOptions
       )
-        .then((response) => {
-          console.log(response);
-          return response.json()
-        })
+        .then((response) => response.text())
         .then((result) => {
           console.log(result);
+          setTickets(JSON.parse(result));
         })
         .catch((error) => console.log("error", error));
     });
@@ -128,7 +163,7 @@ const TicketPage = ({ navigation }) => {
             <Text
               style={{ fontSize: dimension.width * 0.03, color: "#BDBDBD" }}
             >
-              {dateFormat(item.date)}
+              {dateFormat(item.date_order)}
             </Text>
           </View>
           <View

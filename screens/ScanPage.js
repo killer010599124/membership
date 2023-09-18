@@ -29,13 +29,18 @@ LogBox.ignoreAllLogs();
 const ScanPage = ({ navigation }) => {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
-  const [scanData, setScanData] = useState("044b-e68e-43a5");
+  const [scanData, setScanData] = useState("");
+
+  const [contact_email, setContactEmail] = useState("");
+  AsyncStorage.getItem("contact_email").then((url) => {
+    setContactEmail(url);
+  });
 
   const [previousScreen, setPreviousScreen] = useState("Barcode");
 
   const [visibleManual, setVisibleManual] = useState(null);
   const [printVisible, setPrintVisible] = useState(null);
-  const [cardStatus, setCardStatus] = useState(true);
+  const [cardStatus, setCardStatus] = useState("");
 
   const [dimension, setDimension] = useState(Dimensions.get("window"));
   const onChange = () => {
@@ -64,8 +69,6 @@ const ScanPage = ({ navigation }) => {
       setScanned(false);
       setHasPermission(false);
 
-      console.log("back");
-
       (async () => {
         const { status } = await BarCodeScanner.requestPermissionsAsync();
         setHasPermission(status === "granted");
@@ -78,13 +81,8 @@ const ScanPage = ({ navigation }) => {
 
   const handleBarCodeScanned = async ({ type, data }) => {
     setScanned(true);
-    console.log(data);
     setScanData(data);
-  };
-
-  useEffect(() => {
     var myHeaders = new Headers();
-    
 
     var requestOptions = {
       method: "POST",
@@ -93,13 +91,35 @@ const ScanPage = ({ navigation }) => {
     };
 
     fetch(
-      "https://erp.topledspain.com/api/search_giftcard?code=0448-aa4c-462b",
+      `https://erp.topledspain.com/api/search_giftcard?code=${data}`,
       requestOptions
     )
       .then((response) => response.text())
-      .then((result) => console.log(result))
-      .catch((error) => console.log("error", error));
-  }, []);
+      .then((result) => {
+        console.log(result);
+
+        if (result == "no") {
+          setCardStatus("2");
+          setVisibleManual(1);
+        } else {
+          const jsonData = JSON.parse(result);
+          console.log(jsonData[0].contact);
+          if (jsonData[0].contact == "new") {
+            setPrintVisible(1);
+          } else if (jsonData[0].contact == contact_email) {
+            setCardStatus("3");
+            setVisibleManual(1);
+          } else if (jsonData[0].contact != contact_email) {
+            setCardStatus("1");
+            setVisibleManual(1);
+          }
+        }
+      })
+      .catch((error) => {
+        console.log("error", "card not find");
+      });
+  };
+
   const PrintModal = () => {
     return (
       <View
@@ -344,11 +364,13 @@ const ScanPage = ({ navigation }) => {
         isVisible={visibleManual === 1}
         style={{ justifyContent: "center" }}
       >
-        {cardStatus
+        {cardStatus === "1"
           ? royalModal(
               "You cannot bind this gift card, please contact us if you have any questions."
             )
-          : royalModal("Could not find this gift card .")}
+          : cardStatus === "2"
+          ? royalModal("Could not find this gift card .")
+          : royalModal("This card is already registered to you .")}
       </Modal>
       <Modal isVisible={printVisible === 1} style={styles.bottomModal}>
         {PrintModal()}
