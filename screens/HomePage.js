@@ -25,6 +25,7 @@ const HomeScreen = ({ navigation, route }) => {
   const [point, setPoint] = useState();
   const [balance, setBalance] = useState();
   const [average, setAverage] = useState();
+  const [imageData, setImageData] = useState(null);
   const [shouldRender, setShouldRender] = useState(false);
   const [dimension, setDimension] = useState(Dimensions.get("window"));
   const onChange = () => {
@@ -39,18 +40,6 @@ const HomeScreen = ({ navigation, route }) => {
   });
 
   const [giftCards, setGiftCards] = useState([]);
-  const testgiftCards = [
-    {
-      code: "3503-3ef3-39l8",
-      date: "29 June 2021, 7.14 PM",
-      balance: 2,
-    },
-    {
-      code: "3503-3ef3-39l9",
-      date: "29 June 2021, 7.14 PM",
-      balance: 2,
-    },
-  ];
 
   const generateRandomString = () => {
     const characters = "abcdef0123456789";
@@ -85,10 +74,7 @@ const HomeScreen = ({ navigation, route }) => {
           return response.json();
         })
         .then((result) => {
-          console.log(result);
-
           setUsername(result.name + "!");
-          console.log(result.barcode);
           setAppId(result.barcode);
           setShouldRender(true);
         })
@@ -132,11 +118,37 @@ const HomeScreen = ({ navigation, route }) => {
         .then((result) => {
           const jsonData = JSON.parse(result);
           setGiftCards([jsonData[0], jsonData[1]]);
-          console.log(jsonData[0]);
         })
         .catch((error) => console.log("error", error));
+
+      fetch(
+        `https://erp.topledspain.com/api/get_contact_image?email=${contact_email}`,
+        requestOptions
+      )
+        .then((response) => response.text())
+        .then((result) => {
+          // const url = URL.createObjectURL(blob);
+          setImageData(result);
+
+        })
+        .catch(error => {
+          console.error('Error retrieving contact image:', error);
+        });
     });
   }, []);
+
+  const openImagePicker = () => {
+    ImagePicker.showImagePicker({}, (response) => {
+      if (response.didCancel) {
+        console.log("User cancelled image picker");
+      } else if (response.error) {
+        console.log("Image picker error:", response.error);
+      } else {
+        // Handle the selected image here
+        // `response.uri` contains the local file path of the selected image
+      }
+    });
+  };
 
   const dateFormat = (dateString) => {
     const dateTime = new Date(dateString);
@@ -295,11 +307,13 @@ const HomeScreen = ({ navigation, route }) => {
           style={{
             width: dimension.width * 0.1,
             height: dimension.width * 0.1,
+            borderRadius : dimension.width * 0.05
           }}
         >
           <Image
-            source={require("../assets/Avatar1.png")}
-            style={{ width: "100%", height: "100%" }}
+            // source={require("../assets/Avatar1.png")}
+            source={{ uri: `data:image/jpeg;base64,${imageData}` }}
+            style={{ width: "100%", height: "100%", borderRadius : dimension.width * 0.05 }}
             resizeMode="stretch"
           ></Image>
         </View>

@@ -35,7 +35,7 @@ const TicketPage = ({ navigation }) => {
 
   const dateFormat = (inputDateStr) => {
     // Convert input string to a Date object
-    console.log(inputDateStr)
+
     var inputDateStr = "2023-09-15 14:31:30";
 
     // Convert input string to a Date object
@@ -79,8 +79,7 @@ const TicketPage = ({ navigation }) => {
     var formattedDateStr =
       day + " " + month + " " + year + ", " + timeStr + " " + ampm;
 
-    // Output the formatted date string
-    console.log(formattedDateStr);
+
     return formattedDateStr;
   };
   useEffect(() => {
@@ -94,12 +93,11 @@ const TicketPage = ({ navigation }) => {
       };
 
       fetch(
-        "https://erp.topledspain.com/api/get_contact_orders?email=793100371@qq.com",
+        `https://erp.topledspain.com/api/get_contact_orders?email=${contact_email}`,
         requestOptions
       )
         .then((response) => response.text())
         .then((result) => {
-          console.log(result);
           setTickets(JSON.parse(result));
         })
         .catch((error) => console.log("error", error));
@@ -131,6 +129,7 @@ const TicketPage = ({ navigation }) => {
           shadowRadius: 10,
         }}
         onPress={() => {
+          navigation.navigate('Invoice')
           // handleProductPress(item);
         }}
       >

@@ -76,6 +76,36 @@ const GiftCardPage = ({ navigation }) => {
     });
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      // do something - for example: reset states, ask for camera permission
+      AsyncStorage.getItem("contact_email").then((contact_email) => {
+        var myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+        var requestOptions = {
+          method: "POST",
+          headers: myHeaders,
+          redirect: "follow",
+        };
+  
+        fetch(
+          `https://erp.topledspain.com/api/get_contact_giftcards?email=${contact_email}`,
+          requestOptions
+        )
+          .then((response) => response.text())
+          .then((result) => {
+            const jsonData = JSON.parse(result);
+            setGiftCards(jsonData);
+            setCurrentItem(jsonData[0]);
+          })
+          .catch((error) => console.log("error", error));
+      });
+    });
+
+    // Return the function to unsubscribe from the event so it gets removed on unmount
+    return unsubscribe;
+  }, [navigation]);
+
   const renderItem = ({ item }) => (
     <View
       style={{

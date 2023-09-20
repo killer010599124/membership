@@ -32,14 +32,16 @@ const Button1 = ({ title, onPress }) => {
       style={{
         ...styles.loginScreenButton,
         marginTop: dimension.height * 0.05,
-        width: dimension.width - 40,
-        height: dimension.height * 0.06,
+        width: dimension.width*0.6,
+        height: dimension.height * 0.05,
         borderRadius: dimension.height * 0.015,
       }}
       // onPress={() => navigate('HomeScreen')}
       underlayColor="#fff"
     >
-      <Text style={styles.loginText}>{title}</Text>
+      <View style={styles.buttonContent}>
+        <Text style={styles.buttonText}>{title}</Text>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -47,21 +49,30 @@ const Button1 = ({ title, onPress }) => {
 const styles = StyleSheet.create({
   loginScreenButton: {
     alignSelf: "center",
-    backgroundColor: "white",
+    backgroundColor: "#5B259F",
     borderRadius: 5,
     borderWidth: 1,
-    borderColor: "white",
+    borderColor: "#5B259F",
     textAlign: "center",
     alignItems: "center",
   },
   loginText: {
-    color: "black",
+    color: "white",
     textAlign: "center",
     alignItems: "center",
-    lineHeight: 28,
-    fontSize: 12,
+    fontSize: 14,
     paddingLeft: 10,
     paddingRight: 10,
+  },
+  buttonContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 export default Button1;

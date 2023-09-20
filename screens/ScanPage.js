@@ -120,6 +120,25 @@ const ScanPage = ({ navigation }) => {
       });
   };
 
+  const registerGiftCard = () => {
+    AsyncStorage.getItem("contact_email").then((contact_email) => {
+      var myHeaders = new Headers();
+      var requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        redirect: "follow",
+      };
+
+      fetch(
+        `https://erp.topledspain.com/api/register_giftcard?code=${scanData}&email=${contact_email}`,
+        requestOptions
+      )
+        .then((response) => response.text())
+        .then((result) => console.log(result))
+        .catch((error) => console.log("error", error));
+    });
+  };
+
   const PrintModal = () => {
     return (
       <View
@@ -149,6 +168,7 @@ const ScanPage = ({ navigation }) => {
             }}
             onPress={() => {
               setPrintVisible(null);
+              setScanned(false);
             }}
           >
             <AntDesign name="close" size={30} color="#D7D7D7" />
@@ -189,6 +209,7 @@ const ScanPage = ({ navigation }) => {
         <Button
           title="Register"
           onPress={() => {
+            registerGiftCard()
             navigation.navigate("Success");
           }}
         ></Button>
@@ -224,6 +245,7 @@ const ScanPage = ({ navigation }) => {
             }}
             onPress={() => {
               setVisibleManual(null);
+              setScanned(false);
             }}
           >
             <AntDesign name="close" size={30} color="#D7D7D7" />

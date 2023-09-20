@@ -18,6 +18,7 @@ import PrintScanPage from "./screens/PrintScan";
 import GiftCardPage from "./screens/GiftCard";
 import SettingPage from "./screens/Setting";
 import ProfilePage from "./screens/Profile";
+import InvoicePage from "./screens/Invoice";
 // Import any other screens you want to use
 const Stack = createStackNavigator();
 export default function App() {
@@ -35,7 +36,7 @@ export default function App() {
           <Stack.Screen name="Profile" component={ProfilePage} options={{ headerShown: false }}/>
           <Stack.Screen name="Scan" component={ScanPage}  options={{ headerShown: false }}/>
           <Stack.Screen name="Success" component={AddGiftCardPage}  options={{ headerShown: false }}/>
-        
+          <Stack.Screen name="Invoice" component={InvoicePage} options={{ headerShown: false }}/>
         </Stack.Navigator>
       </NavigationContainer>
   );

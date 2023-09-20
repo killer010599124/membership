@@ -6,12 +6,14 @@ import {
   Dimensions,
   TouchableOpacity,
   StyleSheet,
+  FlatList,
   Image,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useKeepAwake } from "expo-keep-awake";
 import EditText from "../Components/EditBox";
 import Button from "../Components/Button";
+import Button1 from "../Components/Button1";
 import Icon from "react-native-vector-icons/Ionicons";
 import { FontAwesome } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
@@ -30,26 +32,7 @@ const InvoicePage = ({ navigation }) => {
   const [city, setCity] = useState("");
   const [postCode, setPostCode] = useState("");
 
-  const [visibleManual, setVisibleManual] = useState(null);
-
-  const imgUrl = [
-    require("../assets/Avatar1.png"),
-    require("../assets/Avatar2.png"),
-    require("../assets/Avatar3.png"),
-    require("../assets/Avatar4.png"),
-    require("../assets/Avatar5.png"),
-    require("../assets/Avatar6.png"),
-  ];
-  const [currentAvatar, setCurrentAvatar] = useState(imgUrl[0]);
-  const [showPassword, setShowPassword] = useState(false);
-  const handleTogglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const handleToggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
 
   const [dimension, setDimension] = useState(Dimensions.get("window"));
   const onChange = () => {
@@ -69,157 +52,52 @@ const InvoicePage = ({ navigation }) => {
     // });
   }, []);
 
-  const royalModal = () => {
-    return (
-      <View
-        style={{
-          borderRadius: dimension.width * 0.02,
-          height: dimension.height * 0.35,
-          backgroundColor: "white",
-          alignItems: "center",
-        }}
-      >
-        <View
-          style={{
-            position: "absolute",
-            width: "100%",
-            alignItems: "flex-end",
-            zIndex: 99,
-          }}
-        >
-          <TouchableOpacity
-            style={{
-              borderRadius: 10,
-              height: dimension.height * 0.04,
-              width: dimension.height * 0.04,
-              //   borderRadius: dimension.height * 0.02,
-              marginRight: 10,
-              marginTop: 10,
-            }}
-            onPress={() => {
-              setVisibleManual(null);
-            }}
-          >
-            <AntDesign name="close" size={30} color="#D7D7D7" />
-          </TouchableOpacity>
-        </View>
+  const orderList = [
+    {
+      product_name: "BOMBILLA 6400K 7W 665LM E27",
+      qty: 1.0,
+      price_unit: "8.0",
+      price_total: "8.0",
+    },
+    {
+      product_name: "BOMBILLA 3000K 12W 1150LM E27",
+      qty: 1.0,
+      price_unit: "5.25",
+      price_total: "5.25",
+    },
+    {
+      product_name: "BOMBILLA 3U 6400K 6.5W E14 5/100",
+      qty: 1.0,
+      price_unit: "3.2",
+      price_total: "3.2",
+    },
+    {
+      product_name: "CARDAN 20W 4000K",
+      qty: 2.0,
+      price_unit: "19.5",
+      price_total: "39.0",
+    },
+    {
+      product_name: "CARRILTRIFASICO DE 2METRO NEGRO",
+      qty: 1.0,
+      price_unit: "39.5",
+      price_total: "39.5",
+    },
+  ];
 
-        <View
-          style={{
-            ...styles.container,
-            height: dimension.height * 0.3,
-            width: dimension.width * 0.9,
-            marginTop: dimension.height * 0.025,
-          }}
-        >
-          <View style={{ ...styles.row, width: "100%" }}>
-            <TouchableOpacity
-              style={{
-                width: dimension.width * 0.2,
-                height: dimension.width * 0.2,
-              }}
-              onPress={() => {
-                setVisibleManual(null);
-                setCurrentAvatar(imgUrl[0]);
-              }}
-            >
-              <Image
-                source={imgUrl[0]}
-                style={{ width: "100%", height: "100%" }}
-                resizeMode="stretch"
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={{
-                width: dimension.width * 0.2,
-                height: dimension.width * 0.2,
-              }}
-              onPress={() => {
-                setVisibleManual(null);
-                setCurrentAvatar(imgUrl[1]);
-              }}
-            >
-              <Image
-                source={imgUrl[1]}
-                style={{ width: "100%", height: "100%" }}
-                resizeMode="stretch"
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={{
-                width: dimension.width * 0.2,
-                height: dimension.width * 0.2,
-              }}
-              onPress={() => {
-                setVisibleManual(null);
-                setCurrentAvatar(imgUrl[2]);
-              }}
-            >
-              <Image
-                source={imgUrl[2]}
-                style={{ width: "100%", height: "100%" }}
-                resizeMode="stretch"
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={{ ...styles.row, width: "100%" }}>
-            <TouchableOpacity
-              style={{
-                width: dimension.width * 0.2,
-                height: dimension.width * 0.2,
-              }}
-              onPress={() => {
-                setVisibleManual(null);
-                setCurrentAvatar(imgUrl[3]);
-              }}
-            >
-              <Image
-                source={imgUrl[3]}
-                style={{ width: "100%", height: "100%" }}
-                resizeMode="stretch"
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={{
-                width: dimension.width * 0.2,
-                height: dimension.width * 0.2,
-              }}
-              onPress={() => {
-                setVisibleManual(null);
-                setCurrentAvatar(imgUrl[4]);
-              }}
-            >
-              <Image
-                source={imgUrl[4]}
-                style={{ width: "100%", height: "100%" }}
-                resizeMode="stretch"
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={{
-                width: dimension.width * 0.2,
-                height: dimension.width * 0.2,
-              }}
-              onPress={() => {
-                setVisibleManual(null);
-                setCurrentAvatar(imgUrl[5]);
-              }}
-            >
-              <Image
-                source={imgUrl[5]}
-                style={{ width: "100%", height: "100%" }}
-                resizeMode="stretch"
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    );
-  };
+  const renderItem = ({ item }) => (
+    <View
+      style={{
+        paddingHorizontal: dimension.width * 0.01,
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between",
+      }}
+    >
+      <Text>{item.product_name}</Text>
+      <Text>{item.price_total}</Text>
+    </View>
+  );
 
   return (
     <View
@@ -244,144 +122,84 @@ const InvoicePage = ({ navigation }) => {
           }}
         />
       </View>
-
-      <TouchableOpacity
+      <View
         style={{
-          height: dimension.height * 0.2,
-          width: "100%",
+          width: dimension.width * 0.2,
+          height: dimension.width * 0.2,
           alignSelf: "center",
-          backgroundColor: "#2C1746",
           marginTop: dimension.height * 0.1,
           borderRadius: dimension.width * 0.05,
           alignItems: "center",
           justifyContent: "center",
         }}
-        onPress={() => {
-          setVisibleManual(1);
-        }}
       >
-        <View
-          style={{
-            width: dimension.width * 0.2,
-            height: dimension.width * 0.2,
-          }}
-        >
-          <Image
-            source={currentAvatar}
-            style={{ width: "100%", height: "100%" }}
-            resizeMode="stretch"
-          ></Image>
-        </View>
-        <Text style={{ color: "white", fontSize: dimension.width * 0.07 }}>
-          Jaka
-        </Text>
-      </TouchableOpacity>
+        <Image
+          source={require("../assets/invoice.png")}
+          style={{ width: "100%", height: "100%" }}
+          resizeMode="stretch"
+        ></Image>
+      </View>
+
       <Text
         style={{
           marginTop: 10,
           textAlign: "center",
           color: "#130138",
-          fontSize: dimension.width * 0.05,
+          fontSize: dimension.width * 0.03,
           fontWeight: "bold",
         }}
       >
-        Complete your profile
+        Puerto maxcotas s.l {"\n"}
+        pol.industrial risco prieto {"\n"}
+        35600 puerto del rosario {"\n"}
+        tfno.9281856504 {"\n"}
+        B13668926
       </Text>
 
-      <Text style={{ marginTop: 10 }}>Name</Text>
-      <TextInput
+      <View>
+        <FlatList
+          data={orderList}
+          renderItem={renderItem}
+          // keyExtractor={(item) => item.id.toString()}
+          style={{ marginTop: 20 }}
+        />
+      </View>
+      <View style={{ ...styles.line, marginVertical: 15 }} />
+      <View
         style={{
-          ...styles.editStyle,
-          height: dimension.height * 0.04,
-          fontSize: dimension.height * 0.02,
+          paddingHorizontal: dimension.width * 0.01,
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
         }}
-        placeholder="Enter a name"
-        value={name}
-        onChangeText={setName}
-      ></TextInput>
+      >
+        <Text>Total</Text>
+        <Text>139.00</Text>
+      </View>
 
-      <Text style={{ marginTop: 10 }}>Surname</Text>
-      <TextInput
-        style={{
-          ...styles.editStyle,
-          height: dimension.height * 0.04,
-          fontSize: dimension.height * 0.02,
-        }}
-        placeholder="Enter a surname"
-        value={surname}
-        onChangeText={setSurname}
-      ></TextInput>
-
-      <Text style={{ marginTop: 10 }}>Tax</Text>
-      <TextInput
-        style={{
-          ...styles.editStyle,
-          height: dimension.height * 0.04,
-          fontSize: dimension.height * 0.02,
-        }}
-        placeholder="Enter a tax"
-        value={tax}
-        onChangeText={setTax}
-      ></TextInput>
-
-      <Text style={{ marginTop: 10 }}>Province</Text>
-      <TextInput
-        style={{
-          ...styles.editStyle,
-          height: dimension.height * 0.04,
-          fontSize: dimension.height * 0.02,
-        }}
-        placeholder="Enter a province"
-        value={province}
-        onChangeText={setProvince}
-      ></TextInput>
-
-      <Text style={{ marginTop: 10 }}>Address</Text>
-      <TextInput
-        style={{
-          ...styles.editStyle,
-          height: dimension.height * 0.04,
-          fontSize: dimension.height * 0.02,
-        }}
-        placeholder="Enter a address"
-        value={address}
-        onChangeText={setAddress}
-      ></TextInput>
-
-      <Text style={{ marginTop: 10 }}>City</Text>
-      <TextInput
-        style={{
-          ...styles.editStyle,
-          height: dimension.height * 0.04,
-          fontSize: dimension.height * 0.02,
-        }}
-        placeholder="Enter a city"
-        value={city}
-        onChangeText={setCity}
-      ></TextInput>
-
-      <Text style={{ marginTop: 10 }}>Post Code</Text>
-      <TextInput
-        style={{
-          ...styles.editStyle,
-          height: dimension.height * 0.04,
-          fontSize: dimension.height * 0.02,
-        }}
-        placeholder="Enter a post code"
-        value={postCode}
-        onChangeText={setPostCode}
-      ></TextInput>
-
-      <Button
-        title="Save"
-        onPress={() => {
-          navigation.navigate("Setting");
-        }}
-      />
-
-      <Modal isVisible={visibleManual === 1} style={styles.bottomModal}>
-        {royalModal()}
-      </Modal>
+      <View style = {{position : 'absolute', marginTop : dimension.height * 0.8, alignSelf : 'center'}}>
+        <Text
+          style={{
+            marginTop: 10,
+            textAlign: "center",
+            width: dimension.width * 0.7,
+            alignSelf: "center",
+            color: "#130138",
+            fontSize: dimension.width * 0.04,
+            fontWeight: "bold",
+          }}
+        >
+          Returns bazaar items with purchase receipt and original packaging
+          within a maximum period of 30 days without prejudice to the warranty
+          law, customer service
+        </Text>
+        <Button1
+          title="Register Invoice"
+          onPress={() => {
+            navigation.navigate("Ticket");
+          }}
+        />
+      </View>
     </View>
   );
 };
@@ -390,6 +208,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 10,
+  },
+  line: {
+    borderBottomColor: "black",
+    borderBottomWidth: 1,
+    borderStyle: "dashed",
+    width: "100%",
   },
   row: {
     flexDirection: "row",
