@@ -129,7 +129,8 @@ const TicketPage = ({ navigation }) => {
           shadowRadius: 10,
         }}
         onPress={() => {
-          navigation.navigate('Invoice')
+          const order_name = item.name
+          navigation.navigate('Invoice', {order_name})
           // handleProductPress(item);
         }}
       >

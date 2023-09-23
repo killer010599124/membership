@@ -474,6 +474,7 @@ class APIController(http.Controller):
                     'name': order['name'],
                     'date_order': str(order['date_order']),
                     'amount_total': str(order['amount_total']),
+                    'state': order['state'],
                 } for order in orders]
 
                 return json.dumps(order_data)
@@ -521,6 +522,47 @@ class APIController(http.Controller):
 
         # Return an empty list if orders are not available
         return json.dumps([])
+    
+    @http.route('/api/register_invoice', auth='public', type='http', website=True, methods=['POST'], csrf=False)
+    def register_invoice(self, **post):
+        email = post.get('email')
+        contacts = request.env['res.partner'].search([('email', '=', email)])
+        order_name = post.get('order_name')
+
+        if contacts:
+            contact = contacts[0]
+
+            orders = request.env['pos.order'].sudo().search([('partner_id', '=', contact.id),('name' , 'ilike' , order_name)])
+            
+            if orders:
+
+                order = orders[0]
+                invoices = request.env['account.move']
+                # invoice = invoices[0]
+                return str(invoices)
+                properties = {}
+                for field_name in invoice.fields_get():
+                    value = invoice[field_name]
+                    properties[field_name] = value
+
+                return str(properties)
+
+                # invoice = invoices.create({
+                #     'partner_id': contact.id,
+                #     'type': 'out_invoice',
+                #     'invoice_origin': order.name,
+                #     'invoice_line_ids': [(0, 0, {
+                #         'product_id': line.product_id.id,
+                #         'quantity': line.product_uom_qty,
+                #         'price_unit': line.price_unit,
+                #     }) for line in order.lines],
+                # })
+
+                order.write({'state': 'invoiced', 'invoice_ids': [(4, invoice.id)]})
+                return "Succesfully registered"
+
+        # Return an empty list if orders are not available
+        return "Faild registered"
 
         
     

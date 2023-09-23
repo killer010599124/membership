@@ -21,24 +21,18 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import CustomHeader from "../Components/header";
 import Modal from "react-native-modal";
-const InvoicePage = ({ navigation }) => {
+const InvoicePage = ({ navigation, route }) => {
   useKeepAwake();
 
-  const [surname, setSurname] = useState("");
-  const [name, setName] = useState("");
-  const [tax, setTax] = useState("");
-  const [province, setProvince] = useState("");
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [postCode, setPostCode] = useState("");
-
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+const [orderList, setOrderList] = useState([])
+const [totalPrice , setTotalPrice] = useState()
+const [date, setDate] = useState("")
 
   const [dimension, setDimension] = useState(Dimensions.get("window"));
   const onChange = () => {
     setDimension(Dimensions.get("window"));
   };
-
+  const { order_name } = route.params;
   useEffect(() => {
     Dimensions.addEventListener("change", onChange);
     return () => {
@@ -47,55 +41,76 @@ const InvoicePage = ({ navigation }) => {
   });
 
   useEffect(() => {
-    // Font.loadAsync({
-    //   Rubic: require("../assets/font/Rubik-SemiBold.ttf"),
-    // });
+    AsyncStorage.getItem("contact_email").then((contact_email) => {
+      var myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+      var requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        redirect: "follow",
+      };
+
+      fetch(
+        `https://erp.topledspain.com/api/get_order_details?email=${contact_email}&order_name=${order_name}`,
+        requestOptions
+      )
+        .then((response) => response.text())
+        .then((result) => {
+          const jsonData = JSON.parse(result);
+          console.log(jsonData[0].name)
+          setOrderList(jsonData[0].lines)
+          setTotalPrice(jsonData[0].amount_total)
+          setDate(jsonData[0].date_order)
+        })
+        .catch((error) => console.log("error", error));
+    });
   }, []);
 
-  const orderList = [
-    {
-      product_name: "BOMBILLA 6400K 7W 665LM E27",
-      qty: 1.0,
-      price_unit: "8.0",
-      price_total: "8.0",
-    },
-    {
-      product_name: "BOMBILLA 3000K 12W 1150LM E27",
-      qty: 1.0,
-      price_unit: "5.25",
-      price_total: "5.25",
-    },
-    {
-      product_name: "BOMBILLA 3U 6400K 6.5W E14 5/100",
-      qty: 1.0,
-      price_unit: "3.2",
-      price_total: "3.2",
-    },
-    {
-      product_name: "CARDAN 20W 4000K",
-      qty: 2.0,
-      price_unit: "19.5",
-      price_total: "39.0",
-    },
-    {
-      product_name: "CARRILTRIFASICO DE 2METRO NEGRO",
-      qty: 1.0,
-      price_unit: "39.5",
-      price_total: "39.5",
-    },
-  ];
+  // const orderList = [
+  //   {
+  //     product_name: "BOMBILLA 6400K 7W 665LM E27",
+  //     qty: 1.0,
+  //     price_unit: "8.0",
+  //     price_total: "8.0",
+  //   },
+  //   {
+  //     product_name: "BOMBILLA 3000K 12W 1150LM E27",
+  //     qty: 1.0,
+  //     price_unit: "5.25",
+  //     price_total: "5.25",
+  //   },
+  //   {
+  //     product_name: "BOMBILLA 3U 6400K 6.5W E14 5/100",
+  //     qty: 1.0,
+  //     price_unit: "3.2",
+  //     price_total: "3.2",
+  //   },
+  //   {
+  //     product_name: "CARDAN 20W 4000K",
+  //     qty: 2.0,
+  //     price_unit: "19.5",
+  //     price_total: "39.0",
+  //   },
+  //   {
+  //     product_name: "CARRILTRIFASICO DE 2METRO NEGRO",
+  //     qty: 1.0,
+  //     price_unit: "39.5",
+  //     price_total: "39.5",
+  //   },
+  // ];
 
   const renderItem = ({ item }) => (
     <View
       style={{
         paddingHorizontal: dimension.width * 0.01,
+        paddingVertical : 2,
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-between",
       }}
     >
-      <Text>{item.product_name}</Text>
-      <Text>{item.price_total}</Text>
+      <Text style = {{width : '90%'}}>{item.product_name}</Text>
+      <Text>{parseFloat(item.price_total).toFixed(2)}</Text>
     </View>
   );
 
@@ -118,7 +133,7 @@ const InvoicePage = ({ navigation }) => {
       >
         <CustomHeader
           onBackPress={() => {
-            navigation.navigate("Setting");
+            navigation.navigate("Ticket");
           }}
         />
       </View>
@@ -145,7 +160,7 @@ const InvoicePage = ({ navigation }) => {
           marginTop: 10,
           textAlign: "center",
           color: "#130138",
-          fontSize: dimension.width * 0.03,
+          fontSize: dimension.width * 0.04,
           fontWeight: "bold",
         }}
       >
@@ -173,11 +188,29 @@ const InvoicePage = ({ navigation }) => {
           justifyContent: "space-between",
         }}
       >
-        <Text>Total</Text>
-        <Text>139.00</Text>
+        <Text style={{ fontSize: 16, fontWeight: "bold" }}>Total</Text>
+        <Text style={{ fontSize: 16, fontWeight: "bold" }}>{parseFloat(totalPrice).toFixed(2)}</Text>
+      </View>
+      <View style={{ ...styles.line, marginVertical: 15 }} />
+      <View
+        style={{
+          paddingHorizontal: dimension.width * 0.01,
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}
+      >
+        <Text style={{ fontSize: 16, fontWeight: "bold" }}>Date</Text>
+        <Text style={{ fontSize: 16, fontWeight: "bold" }}>{date}</Text>
       </View>
 
-      <View style = {{position : 'absolute', marginTop : dimension.height * 0.8, alignSelf : 'center'}}>
+      <View
+        style={{
+          position: "absolute",
+          marginTop: dimension.height * 0.8,
+          alignSelf: "center",
+        }}
+      >
         <Text
           style={{
             marginTop: 10,
