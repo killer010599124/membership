@@ -131,17 +131,16 @@ class APIController(http.Controller):
     
     @http.route('/api/product/create/', auth='public', type='http', methods=['POST'], csrf=False)
     def create_product(self, **post):
-
         data = json.loads(request.httprequest.data)
         data['list_price'] = round(float(data['list_price']), 3)
         data['standard_price'] = round(float(data['standard_price']), 3)
         try:
             new_product = http.request.env['product.product'].create(data)
+            new_product.write({'available_in_pos': True})  # Set 'available_in_pos' field to True
         except Exception as e:
             return Response(response=json.dumps({'error': str(e)}),
                             content_type='application/json', status=400)
 
-        
         return json.dumps({
             'id': new_product.id,
             'name': new_product.name,
